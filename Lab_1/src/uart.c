@@ -10,12 +10,12 @@
 void uart_init(int baud_rate)
 {
   int divisor = UART_clkin / (baud_rate << 4);
-  *UART_LCR = 0x80;  // prepare to write baud rate
-  *UART_DLL = divisor & 0xFF;  // write low byte
-  *UART_DLH = divisor >> 8;    // write high byte
+  *UART0_LCR = 0x80;  // prepare to write baud rate
+  *UART0_DLL = divisor & 0xFF;  // write low byte
+  *UART0_DLH = divisor >> 8;    // write high byte
   // set baud rate, no parity, 8 data bits, 2 stop bits.
   // enable transmit holding register and receive buffer register.
-  *UART_LCR = 0x17; 
+  *UART0_LCR = 0x17; 
   // enable interrupts
   // UART_IER = 0x11; 
 }
@@ -24,9 +24,9 @@ void uart_put_char(char c)
 {
   char status;
   do
-    status = *UART_LSR;
+    status = *UART0_LSR;
   while (!(status & 0x20));
-  *UART_THR = c;
+  *UART0_THR = c;
 }
 
 void uart_write_string(char *s)
@@ -41,9 +41,9 @@ char uart_get_char()
   int status;
   char c;
   do
-    status = *UART_LSR;
+    status = *UART0_LSR;
   while (!(status & 0x01));
-  c = *UART_RBR;
+  c = *UART0_RBR;
   uart_put_char(c);  // echo the character
   if( c == '\r')
     uart_put_char('\n');
