@@ -1,0 +1,26 @@
+CMakeFiles/Lab_2.elf.dir/src/hello_task.c.obj: \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/src/hello_task.c \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/include/FreeRTOSConfig.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/include/FreeRTOS.h \
+ /usr/lib/gcc/arm-none-eabi/13.2.1/include/stddef.h \
+ /usr/lib/gcc/arm-none-eabi/13.2.1/include/stdint.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/include/FreeRTOSConfig.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/FreeRTOS/FreeRTOS-Kernel/include/projdefs.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/FreeRTOS/FreeRTOS-Kernel/include/portable.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/FreeRTOS/FreeRTOS-Kernel/include/deprecated_definitions.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/FreeRTOS/FreeRTOS-Kernel/portable/GCC/ARM_CM3/portmacro.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/FreeRTOS/FreeRTOS-Kernel/include/mpu_wrappers.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/FreeRTOS/FreeRTOS-Kernel/include/task.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/FreeRTOS/FreeRTOS-Kernel/include/list.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/include/uart.h \
+ /usr/include/newlib/stdlib.h /usr/include/newlib/machine/ieeefp.h \
+ /usr/include/newlib/_ansi.h /usr/include/newlib/newlib.h \
+ /usr/include/newlib/_newlib_version.h /usr/include/newlib/sys/config.h \
+ /usr/include/newlib/sys/features.h /usr/include/newlib/sys/reent.h \
+ /usr/include/newlib/_ansi.h /usr/include/newlib/sys/cdefs.h \
+ /usr/include/newlib/machine/_default_types.h \
+ /usr/include/newlib/sys/_types.h /usr/include/newlib/machine/_types.h \
+ /usr/include/newlib/sys/lock.h /usr/include/newlib/machine/stdlib.h \
+ /usr/include/newlib/alloca.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/include/hello_task.h \
+ /home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/include/FreeRTOS.h

@@ -1,0 +1,6 @@
+/home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/CMakeFiles/realclean.dir
+/home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/CMakeFiles/extra-clean.dir
+/home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/CMakeFiles/tarfile.dir
+/home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/CMakeFiles/Lab_2.elf.dir
+/home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/CMakeFiles/edit_cache.dir
+/home/student/s101113328/CENG448/SDSMT_CENG_448/Lab_2/CMakeFiles/rebuild_cache.dir
