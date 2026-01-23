@@ -30,6 +30,8 @@
         .globl   __Vectors
         .globl   __Vectors_End
         .globl   __Vectors_Size
+        .extern vPortSysTickHandler
+        .extern xPortPendSVHandler
         .extern xPortSysTickHandler
 __Vectors:
         .long    __StackTop                 /*     Top of Stack */
@@ -43,11 +45,11 @@ __Vectors:
         .long    0                          /*     Reserved */
         .long    0                          /*     Reserved */
         .long    0                          /*     Reserved */
-        .long    SVC_Handler                /*  -5 SVC Handler */
+        .long    vPortSVCHandler                /*  -5 SVC Handler */
         .long    DebugMon_Handler           /*  -4 Debug Monitor Handler */
         .long    0                          /*     Reserved */
-        .long    PendSV_Handler             /*  -2 PendSV Handler */
-        .long    xPortSysTickHandler           /*  -1 SysTick Handler */
+        .long    xPortPendSVHandler
+        .long    xPortSysTickHandler
 
         /* Interrupts */
         .long    Interrupt0_Handler         /*   0 Interrupt 0 */
@@ -167,10 +169,10 @@ Default_Handler:
         Set_Default_Handler  MemManage_Handler
         Set_Default_Handler  BusFault_Handler
         Set_Default_Handler  UsageFault_Handler
-        Set_Default_Handler  SVC_Handler
+        //Set_Default_Handler  SVC_Handler
         Set_Default_Handler  DebugMon_Handler
-        Set_Default_Handler  PendSV_Handler
-        /*Set_Default_Handler  SysTick_Handler*/
+        //Set_Default_Handler  PendSV_Handler
+        //Set_Default_Handler  SysTick_Handler
 
         Set_Default_Handler  Interrupt0_Handler
         Set_Default_Handler  Interrupt1_Handler

@@ -8,7 +8,7 @@
 #define STATS_TASK_PRIORITY 4
 
 extern StaticTask_t stats_task_tcb;
-extern StackType_t stats_task_stack[STATS_TASK_STACK_SIZE]
+extern StackType_t stats_task_stack[STATS_TASK_STACK_SIZE];
 
 void stats_task(void *params);
 
