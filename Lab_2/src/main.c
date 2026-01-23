@@ -3,7 +3,7 @@
 #include <task.h>
 #include <uart.h>
 #include "hello_task.h"
-// #include "stats_task.h"
+#include "stats_task.h"
 
 int main( void )
 {
@@ -17,14 +17,14 @@ int main( void )
                     &hello_TCB 
   );
   
-  // xTaskCreateStatic(stats_task,
-  //                   "Stats",
-  //                   STATS_TASK_STACK_SIZE,
-  //                   NULL,
-  //                   STATS_TASK_PRIORITY,
-  //                   stats_task_stack, 
-  //                   &stats_task_tcb
-  // );
+  xTaskCreateStatic(stats_task,
+                    "Stats",
+                    STATS_TASK_STACK_SIZE,
+                    NULL,
+                    STATS_TASK_PRIORITY,
+                    stats_task_stack, 
+                    &stats_task_tcb
+  );
   vTaskStartScheduler();
   while(1);//bad
   
@@ -52,4 +52,9 @@ static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
     Note that, as the array is necessarily of type StackType_t,
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+}
+
+void vConfigureTimerForRunTimeStats( void )
+{
+    /* Nothing needed as timer is configured in setup_stats_timer() */
 }

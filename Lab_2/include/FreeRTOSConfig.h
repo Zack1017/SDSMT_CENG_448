@@ -1,7 +1,6 @@
 
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
-
 //-----------------------------------------------------------
 // Cortex-M specific definitions. */
 //
@@ -103,13 +102,14 @@
 
 // Set up everything needed for statistics reporting.  All af the
 // following must be set to get the runtime stats task to run
-#define configUSE_TRACE_FACILITY                  0
-#define configGENERATE_RUN_TIME_STATS             0
-#define configUSE_STATS_FORMATTING_FUNCTIONS      0 
+#define configUSE_TRACE_FACILITY                  1
+#define configGENERATE_RUN_TIME_STATS             1
+#define configUSE_STATS_FORMATTING_FUNCTIONS      1 
+#define configSTATS_BUFFER_MAX_LENGTH           2048
 int get_stats_counter();
 void setup_stats_timer();
-//#define portGET_RUN_TIME_COUNTER_VALUE          get_stats_counter
-//#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS  setup_stats_timer 
+#define portGET_RUN_TIME_COUNTER_VALUE         get_stats_counter
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS  setup_stats_timer
 
 /* Optional FreeRTOS functionality.  Set the following definitions to
    1 to include the API function, or zero to exclude the API
