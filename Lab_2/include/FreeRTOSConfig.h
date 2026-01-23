@@ -104,8 +104,8 @@
 // Set up everything needed for statistics reporting.  All af the
 // following must be set to get the runtime stats task to run
 #define configUSE_TRACE_FACILITY                  0
-#define configGENERATE_RUN_TIME_STATS             0
-#define configUSE_STATS_FORMATTING_FUNCTIONS      0 
+#define configGENERATE_RUN_TIME_STATS             1
+#define configUSE_STATS_FORMATTING_FUNCTIONS      1 
 int get_stats_counter();
 void setup_stats_timer();
 //#define portGET_RUN_TIME_COUNTER_VALUE          get_stats_counter
