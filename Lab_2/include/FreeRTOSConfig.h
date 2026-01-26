@@ -11,15 +11,16 @@
 //
 // Include CMSIS for your device, or comment this out and set the
 // parameters manually
-// #include <ARMCM3.h> 
+#include <ARMCM3.h> 
+#include <core_cm3.h>
+//#include <Device.h>
 // __NVIC_PRIO_BITS will be specified when CMSIS is being used. BUT
 //  ONLY IF YOU INCLUDE THE CMSIS HEADER PREVIOUSLY
-// #ifdef __NVIC_PRIO_BITS
-//	#define configPRIO_BITS	                         __NVIC_PRIO_BITS
-// #else
-//	#define configPRIO_BITS				 3
-// #endif
-
+//#ifdef __NVIC_PRIO_BITS
+//   #define configPRIO_BITS	                         __NVIC_PRIO_BITS
+//#else
+//   #define configPRIO_BITS				 3
+//#endif
 #define configENABLE_TRUSTZONE  0
 
 // The ARM Cortex supports nested interrupts. (Higher priority

@@ -93,10 +93,15 @@ file(GLOB SOURCES
   "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/list.c"
   "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/portable/GCC/ARM_CM3/port.c"
   "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/portable/MemMang/heap_3.c"
+  "${CMAKE_SOURCE_DIR}/CMSIS/CMSIS/Core/Source/core_cm3.c"
+  "${CMAKE_SOURCE_DIR}/CMSIS/CMSIS/Device/ARM/ARMCM3/Source/system_ARMCM3.c"
   "${CMAKE_SOURCE_DIR}/src/main.c"
   "${CMAKE_SOURCE_DIR}/src/uart.c"
   "${CMAKE_SOURCE_DIR}/src/startup_ARMCM3.S"
   "${CMAKE_SOURCE_DIR}/src/hello_task.c"
+  "${CMAKE_SOURCE_DIR}/src/stats_task.c"
+  "${CMAKE_SOURCE_DIR}/src/stats_timer.c"
+  "${CMAKE_SOURCE_DIR}/src/AXI_timer.c"
 )
 
 # Define our linker script
@@ -118,6 +123,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/include/ 
     ${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/portable/GCC/ARM_CM3/
+    ${CMAKE_SOURCE_DIR}/CMSIS/CMSIS/Core/Include
+    ${CMAKE_SOURCE_DIR}/CMSIS/Device/ARM/ARMCM3/Include
     
 )#/opt/packages/FreeRTOS-LTS/FreeRTOS/FreeRTOS-Plus-TCP/test/FreeRTOS-Kernel/include/projdefs.h
 #/opt/packages/FreeRTOS-LTS/FreeRTOS/FreeRTOS-Kernel/include/projdefs.h

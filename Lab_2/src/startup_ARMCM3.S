@@ -52,18 +52,18 @@ __Vectors:
         .long    xPortSysTickHandler
 
         /* Interrupts */
-        .long    Interrupt0_Handler         /*   0 Interrupt 0 */
-        .long    Interrupt1_Handler         /*   1 Interrupt 1 */
+        .long    AXI_TIMER_0_ISR         /*   0 Interrupt 0 */
+        .long    AXI_TIMER_1_ISR         /*   1 Interrupt 1 */
         .long    Interrupt2_Handler         /*   2 Interrupt 2 */
         .long    Interrupt3_Handler         /*   3 Interrupt 3 */
         .long    Interrupt4_Handler         /*   4 Interrupt 4 */
         .long    Interrupt5_Handler         /*   5 Interrupt 5 */
         .long    Interrupt6_Handler         /*   6 Interrupt 6 */
         .long    Interrupt7_Handler         /*   7 Interrupt 7 */
-        .long    Interrupt8_Handler         /*   8 Interrupt 8 */
-        .long    Interrupt9_Handler         /*   9 Interrupt 9 */
+        //.long    Interrupt8_Handler         /*   8 Interrupt 8 */
+        //.long    Interrupt9_Handler         /*   9 Interrupt 9 */
 
-        .space   (214 * 4)/* Interrupts 10 .. 224 are left out */
+        //.space   (214 * 4)/* Interrupts 10 .. 224 are left out */
 __Vectors_End:
         .equ     __Vectors_Size, __Vectors_End - __Vectors
         .size    __Vectors, . - __Vectors
