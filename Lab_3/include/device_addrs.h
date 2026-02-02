@@ -2,6 +2,26 @@
 // device on our system.
 
 
+// IRQ number for AXI Timer 0
+#define TIMER0_IRQ        0
+// IRQ number for AXI Timer 1
+#define TIMER1_IRQ        1
+// IRQ number for GPIO 0 (push buttons)
+#define GPIO0_IRQ         2
+// IRQ number for GPIO 1 (slide switches and pmod header GPIO)
+#define GPIO1_IRQ         3
+// IRQ number for the PM device
+#define PM_IRQ            4
+// IRQ number for UART 0 
+#define UART0_IRQ         5 
+// IRQ number for UART 1
+#define UART1_IRQ         6
+
+// AXI timer 0
+#define TIMER0       ((void*)0x41C00000)  // AXI timer with two channels
+// AXI timer 1
+#define TIMER1       ((void*)0x41C10000)  // AXI timer with two channels
+
 // For more information on the GPIO devices, read the AXI GPIO
 // LogiCORE Product Guide.
 
@@ -75,19 +95,35 @@
 
 // 16550D UART.  For more information, For more information on the
 // UART(s), read the AXI UART LogiCORE Product Guide.
-#define UART0_RBR     ((uint32_t*)0x44A10000) // Receiver Buffer Register
-#define UART0_THR     ((uint32_t*)0x44A10000) // Transmitter Holding Register
-#define UART0_IER     ((uint32_t*)0x44A10004) // Interrupt Enable Register
-#define UART0_IIR     ((uint32_t*)0x44A10008) // Interrupt Identification Reg.
-#define UART0_FCR     ((uint32_t*)0x44A10008) // FIFO Control Register
-#define UART0_LCR     ((uint32_t*)0x44A1000C) // Line Control Register
-#define UART0_MCR     ((uint32_t*)0x44A10010) // Modem Control Register
-#define UART0_LSR     ((uint32_t*)0x44A10014) // Line Status Register
-#define UART0_MSR     ((uint32_t*)0x44A10018) // Modem Status Register
-#define UART0_SCR     ((uint32_t*)0x44A1001C) // Scratch Register
-#define UART0_DLL     ((uint32_t*)0x44A10000) // Divisor Latch (LSB) Register
-#define UART0_DLH     ((uint32_t*)0x44A10004) // Divisor Latch (MSB) Register
+// #define UART0_RBR     ((uint32_t*)0x44A10000) // Receiver Buffer Register
+// #define UART0_THR     ((uint32_t*)0x44A10000) // Transmitter Holding Register
+// #define UART0_IER     ((uint32_t*)0x44A10004) // Interrupt Enable Register
+// #define UART0_IIR     ((uint32_t*)0x44A10008) // Interrupt Identification Reg.
+// #define UART0_FCR     ((uint32_t*)0x44A10008) // FIFO Control Register
+// #define UART0_LCR     ((uint32_t*)0x44A1000C) // Line Control Register
+// #define UART0_MCR     ((uint32_t*)0x44A10010) // Modem Control Register
+// #define UART0_LSR     ((uint32_t*)0x44A10014) // Line Status Register
+// #define UART0_MSR     ((uint32_t*)0x44A10018) // Modem Status Register
+// #define UART0_SCR     ((uint32_t*)0x44A1001C) // Scratch Register
+// #define UART0_DLL     ((uint32_t*)0x44A10000) // Divisor Latch (LSB) Register
+// #define UART0_DLH     ((uint32_t*)0x44A10004) // Divisor Latch (MSB) Register
+
+// UART0 is routed to the Digilent USB/UART device which routes the
+// signals through the USB cable.
+#define UART0_base ((void*)0x44A10000) 
+#define UART0_RBR  ((volatile uint32_t*)0x44A11000) // Receiver Buffer Register
+#define UART0_THR  ((volatile uint32_t*)0x44A11000) // Transmitter Holding Register
+#define UART0_IER  ((volatile uint32_t*)0x44A11004) // Interrupt Enable Register
+#define UART0_IIR  ((volatile uint32_t*)0x44A11008) // Interrupt Identification Register
+#define UART0_FCR  ((volatile uint32_t*)0x44A11008) // FIFO Control Register
+#define UART0_LCR  ((volatile uint32_t*)0x44A1100C) // Line Control Register
+#define UART0_MCR  ((volatile uint32_t*)0x44A11010) // Modem Control Register
+#define UART0_LSR  ((volatile uint32_t*)0x44A11014) // Line Status Register
+#define UART0_MSR  ((volatile uint32_t*)0x44A11018) // Modem Status Register
+#define UART0_SCR  ((volatile uint32_t*)0x44A1101C) // Scratch Register
+#define UART0_DLL  ((volatile uint32_t*)0x44A11000) // Divisor Latch (LSB) Register
+#define UART0_DLH  ((volatile uint32_t*)0x44A11004) // Divisor Latch (MSB) Register
 
 // LDP-020 UART.  We also have a partially functional LDP-020 UART
 // The one we designed in CENG 342 (Digital Systems).
-#define UART2         ((uint32_t*)0x44A20000) // First register
+#define UART1_base         ((uint32_t*)0x44A20000) // First register
