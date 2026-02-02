@@ -68,5 +68,4 @@ void AXI_TIMER_set_oneshot(unsigned int timer, int count);
 // void AXI_TIMER_set_count_up(int timer);
 // void AXI_TIMER_set_count_down(int timer);
 
-
 #endif

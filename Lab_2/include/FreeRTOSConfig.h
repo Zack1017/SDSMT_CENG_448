@@ -111,6 +111,7 @@ int get_stats_counter();
 void setup_stats_timer();
 #define portGET_RUN_TIME_COUNTER_VALUE         get_stats_counter
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS  setup_stats_timer
+#define AXI_TIMER_CLK_HZ 100000000u 
 
 /* Optional FreeRTOS functionality.  Set the following definitions to
    1 to include the API function, or zero to exclude the API

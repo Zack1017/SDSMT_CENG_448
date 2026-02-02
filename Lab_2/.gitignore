@@ -385,6 +385,7 @@ MSBuild_Logs/
 
 # Visual Studio History (VSHistory) files
 .vshistory/
+/CMakeFiles/*
 
 # BeatPulse healthcheck temp database
 healthchecksdb
