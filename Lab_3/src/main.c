@@ -1,19 +1,23 @@
+#include <FreeRTOSConfig.h>
+#include <FreeRTOS.h>
 #include <task.h>
-#include <UART_16550.h>
+//#include <UART_16550.h>
+#include <uart.h>
 #include <hello_task.h>
 #include <stats_task.h>
 #include <device_addrs.h>
 
 int main( void )
 {
-  NVIC_SetPriority(UART0_IRQ,0x6); // priority for UART
-  NVIC_SetPriority(UART1_IRQ,0x6); // priority for UART
+  uart_init(115200);
+  //NVIC_SetPriority(UART0_IRQ,0x6); // priority for UART
+  //NVIC_SetPriority(UART1_IRQ,0x6); // priority for UART
 
-  UART_16550_init();
+  //UART_16550_init();
 
   // Configure UART0 for 9600/N/8/2
-  UART_16550_configure(UART0,9600,UART_PARITY_NONE,8,2);
-  UART_16550_configure(UART1,9600,UART_PARITY_NONE,8,2);
+  //UART_16550_configure(UART0,9600,UART_PARITY_NONE,8,2);
+  //UART_16550_configure(UART1,9600,UART_PARITY_NONE,8,2);
 
   xTaskCreateStatic(hello_task,
                     "HelloTask",
@@ -60,22 +64,8 @@ static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
-/*-----------------------------------------------------------*/
 
-
-
-
-void vAssertCalled( unsigned line, const char * const filename )
+void vConfigureTimerForRunTimeStats( void )
 {
-  unsigned uSetToNonZeroInDebuggerToContinue=0;
-    taskENTER_CRITICAL();
-    {
-        /* You can step out of this function to debug the assertion by using
-        the debugger to set ulSetToNonZeroInDebuggerToContinue to a non-zero
-        value. */
-        while(uSetToNonZeroInDebuggerToContinue == 0)
-        {
-        }
-    }
-    taskEXIT_CRITICAL();
+    /* Nothing needed as timer is configured in setup_stats_timer() */
 }

@@ -10,9 +10,11 @@ StackType_t hello_stack[ STACK_SIZE ];
 void hello_task(void *pvParameters)
 {
   (void) pvParameters;
+  TickType_t last = xTaskGetTickCount();
+  const TickType_t period = pdMS_TO_TICKS(100);
   while(1)
     {
       uart_write_string("Hello World\n\r");
-      vTaskDelay(pdMS_TO_TICKS( 1000 ));
+      vTaskDelayUntil(&last, period);
     }
 }
