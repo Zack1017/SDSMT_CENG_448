@@ -216,38 +216,30 @@ static void UART_handler(UART_16550_descriptor_t *device)
   IIR_t iir;
   uint8_t ch;
   uint32_t bytes_moved;
-  BaseType_t HigherPriorityTaskWoken=0;
+  BaseType_t HigherPriorityTaskWoken=FALSE;
   BaseType_t result,buffer_empty;
     
-  // This device could have more than one interrupt active. It will
-  // prioritize them and we can handle them one at a time.
-
-  // Read the IIR register and find out what interrupt type is being
-  // signalled.  Every time we read the IIR, it changes.  Therefore,
-  // we cannot read it multiple times to check bits individually.  We
-  // need to read the register into a local IIR_t variable, and then
-  // check the bit fields in that.
-  iir = device->dev->IIR;  // read all of the IIR bits into local variable.
+  // Read IIR once into local 
+  iir = device->dev->IIR;
 
   // Repeat while this device has more interrupts to service
-  while(! iir.INTPEND) // use local variable to check INTPEND. INTPEND
+  while(! iir.INTPEND) 
 		       // is active low!
     {
-      switch(iir.INTID2) // use local variable to check INTID2
+      switch(iir.INTID2) 
         {
         case 0b010: // Received Data Available
         case 0b110: // Character Timeout
-          // Move as many characters as possible from the UART FIFO to
-          // the RX stream buffer
-
-	  // ------------ STUDENTS Insert code here
-
-	  break;
+          // move as much as possible from the UART RX FIFO to the RX stream buffer
+          while(device->dev->LSR.DR)
+          {
+            ch = (uint8_t)device->dev->RBR;
+            (void)xStreamBufferSendFromISR(device->RX_buffer, &ch, sizeof(ch), &HigherPriorityTaskWoken);
+          }
+	      break;
 
         case 0b001: // Transmitter Holding Register Empty
-	  // Call a function to handle the transmitter interrupt.
-	  // This makes the code a little easier to read and manage.
-	  handle_tx_interrupt(device,&HigherPriorityTaskWoken);
+	        handle_tx_interrupt(device,&HigherPriorityTaskWoken);
           break;
 
         default: 
@@ -260,16 +252,9 @@ static void UART_handler(UART_16550_descriptor_t *device)
 
     }
   
-  // The interrupts should now be clear in the device, and now we must
-  // clear the interrupt in the NVIC.
-
-  // ------------ STUDENTS Insert code here
-
-  // If reading from the stream buffer has unblockd a task with higher
-  // priority than the one currently running, then run the scheduler.
-
-  // ------------ STUDENTS Insert code here
-
+  //Clear pending in NVIC and yeild if we woke a higher priority task
+  NVIC_ClearPendingIRQ((IRQn_Type)device->interrupt_number);
+  portYIELD_FROM_ISR(HigherPriorityTaskWoken);
 }
 
 /*****************************************************************************/
