@@ -1,27 +1,14 @@
-// This file implements the API for the 16550 UART driver.
 
-// comment or delete the next line when you start part 4 of the lab
-#define ORIGINAL_PUT_CHAR
-
-#define UART_16550_USE_STATIC_ALLOCATION
-#define UART_16550_RX_BUFFER_SIZE 128
-#define UART_16550_TX_BUFFER_SIZE 512
-
-// By including our header, we ensure that the header and the C
-// file agree about the function definitions.
 
 #include <UART_16550.h>
 #include <device_addrs.h>
 #include <semphr.h>
 #include <stream_buffer.h>
 
-// -----------------------------------------------------------------------
-// No other code needs to see the internals of this UART driver, so we
-// hide all the data definitions in this file. The C standard does not
-// specify the order of bits in a bit field, so this is technically
-// not fully portable.  However, most compilers will give us what we
-// want. If not, we can change the order or come up with a different
-// way of specifying the bits.
+#define ORIGINAL_PUT_CHAR
+#define UART_16550_USE_STATIC_ALLOCATION
+#define UART_16550_RX_BUFFER_SIZE 128
+#define UART_16550_TX_BUFFER_SIZE 512
 
 // Define the layout for the IER
 typedef struct{
@@ -164,61 +151,59 @@ static UART_16550_descriptor_t uart[]={
 
 /*****************************************************************************/
 // This function is the ISR for transmitter interrupts.
-static void handle_tx_interrupt(UART_16550_descriptor_t *device,
-				BaseType_t *HigherPriorityTaskWoken)
+static void handle_tx_interrupt(UART_16550_descriptor_t *device, BaseType_t *HigherPriorityTaskWoken)
 {
-  // We got an interrupt indicating that the UART FIFO just became
-  // empty.  We must decide what to do based on the current state of
-  // the transmitter software state machine.
+  //Transmitter interrupt THR empty Refill the HW FIFO from the TX stream 
+  uint8_t temp[16];
+  size_t n;
+  BaseType_t buffer_empty;
+
   switch(device->tx_state)
     {
       
     case TX_BUFFER:
-      // If the software state machine is in the TX_BUFFER state, then
-      // You can move up to 16 bytes from the transmit stream buffer
-      // to the transmit FIFO.  Move as many bytes as you can.
+      //Move up to 16 bytes from the transmit stream bugger to the FIFO
+      n = xStreamBufferReceiveFromISR(device->TX_buffer, temp, sizeof(temp), HigherPriorityTaskWoken);
 
-      // ------------ STUDENTS Insert code here
-      
-      // If the stream buffer is empty, change the state of the
-      // transmitter software state machine.
+      for(size_t i=0; i<n; i++)
+      {
+        device->dev->THR = temp[i];
+      }
+      buffer_empty = (xStreamBufferSpacesAvailable(device->TX_buffer) == 0);
+      if(buffer_empty)
+      {
+        if(n>0)
+        {
+          //Fifo has data 
+          device->tx_state = TX_FIFO;
+        }
+        else 
+        {
+          device->tx_state = TX_EMPTY;
+          device->dev->IER.ETBEI=0;
 
-      // ------------ STUDENTS Insert code here
-
-      //   If you moved some bytes to the FIFO, then the new state is
-      //   TX_FIFO.
-
-      // ------------ STUDENTS Insert code here
-
-      //   Otherwise, the new state is TX_EMPTY. Optionally, disable
-      //   the transmitter interrupt.
-
-      // ------------ STUDENTS Insert code here
-
+        }
+      }
+      else 
+      {
+        //Data in stream bugger
+        device->tx_state = TX_BUFFER;
+        device->dev->IER.ETBEI =1;
+      }
       break;
 
     case TX_FIFO:
-      // If the software state machine is in the TX_FIFO state then we
-      // know that the FIFO just became empty and there is nothing in
-      // the stream buffer (If there was something in the buffer, the
-      // state would be TX_BUFFER). We can change the state to
-      // TX_EMPTY and optionally disable the transmit interrupt.
-      
-      // ------------ STUDENTS Insert code here
-
+      //Fifo became empty and stream bugger is empty-Idle
+      device->tx_state = TX_EMPTY;
+      device->dev->IER.ETBEI=0;
       break;
 
     case TX_EMPTY:
-      // If the state is TX_EMPTY, then we have nothing to do.  This
-      // should never happen, so hang in an infinite loop for
-      // debugging.
+      //bad
       while(1);
       break;
               
     default:
-      // Somehow the ISR got called in an invalid tx_state. This
-      // should never happen, so hang in an infinite loop for
-      // debugging.
       while(1);
     }
 }
