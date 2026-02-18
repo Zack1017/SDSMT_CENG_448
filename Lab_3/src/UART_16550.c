@@ -356,37 +356,45 @@ void UART_16550_configure(int UART,int baud,int parity,int bits,int stop_bits)
   // Make sure divisor fits in 16 bits
   ASSERT(divisor < 1<<16);
 
-  // Write the baud rate divisor
+  // Write the baud rate divisor (DLAB mist be 1 to access DLL and DLH)
 
-  // ------------ STUDENTS Insert code here
+  uart[UART].dev->LCR.DLAB = 1;
+  uart[UART].dev->DLL = (unit_8)divisor & 0xFF;
+  uart[UART].dev->DLH = (unit_8)(divisor >> 8) & 0xFF;
+  uart[UART].dev->LCR.DLAB = 0;
 
-  // Set the parity (make sure that it is one of the three valid options)
   ASSERT(parity >= 0 && parity < 3);
-
-  // ------------ STUDENTS Insert code here
+  uart[UART].dev->LCR.PEN = (parity != UART_PARITY_NONE);
+  uart[UART].dev->LCR.EPS = (parity == UART_PARITY_EVEN);
+  uart[UART].dev->LCR.SP = 0; // No stick parity
 
   // Set the number of data bits
   ASSERT(bits>4 && bits < 9);
-
-  // ------------ STUDENTS Insert code here
+  uart[UART].dev->LCR.WLS =(uint32_t)(bits - 5);
 
   // Set the number of stop bits
   ASSERT(stop_bits > 0 && stop_bits < 3);
+  uart[UART].dev->LCR.STB = (stop_bits == 2);
 
-  // ------------ STUDENTS Insert code here
+  // Enable and reset the FIFOs
+  uart[UART].dev->FCR.FIFOEN = 1;
+  uart[UART].dev->FCR.RF_reset = 1;
+  uart[UART].dev->FCR.XF_reset = 1;
+  //Rx trigger level: 14 bytes
+  uart[UART].dev->FCR.RFTL = 0b11;
 
-  // Reset and enable the FIFOs.
+  //Enable the receiver interupt
+  uart[UART].dev->IER.ERBFI = 1;
+  uart[UART].dev->IER.ETBEI = 0;
+  uart[UART].dev->IER.ELSI = 0;
+  uart[UART].dev->IER.EDSSI = 0;
 
-  // ------------ STUDENTS Insert code here
-  
-  // Enable receiver and transmitter interrupts. Disable line control
-  // and modem status interrupts.
+  //16550 interrupt enable in NVIC
+  uart[UART].dev->MCR.Out2 = 1; //Enable interrupts
 
-  // ------------ STUDENTS Insert code here
-
-  // Enable interrupts on the NVIC
-
-  // ------------ STUDENTS Insert code here
+  //Enable NVIC interrupt for this UART
+  NVIC_ClearPendingIRQ((IRQn_Type)uart[UART].interrupt_number);
+  NVIC_EnableIRQ((IRQn_Type)uart[UART].interrupt_number);
 }
 
 

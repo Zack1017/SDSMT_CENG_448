@@ -1,46 +1,55 @@
-#include <FreeRTOSConfig.h>
+
 #include <FreeRTOS.h>
 #include <task.h>
-//#include <UART_16550.h>
-#include <uart.h>
+#include <UART_16550.h>
 #include <hello_task.h>
 #include <stats_task.h>
 #include <device_addrs.h>
 
+// "screen /dev/ttyUSB1 9600"
+
+
 int main( void )
 {
-  uart_init(115200);
-  //NVIC_SetPriority(UART0_IRQ,0x6); // priority for UART
-  //NVIC_SetPriority(UART1_IRQ,0x6); // priority for UART
+  TaskHandle_t hello_handle = NULL;
+  TaskHandle_t stats_handle = NULL;
 
-  //UART_16550_init();
+  NVIC_SetPriority(UART0_IRQ,0x6); // priority for UART
+  NVIC_SetPriority(UART1_IRQ,0x6); // priority for UART
+
+  // Intitialize all UARTS
+  UART_16550_init();
 
   // Configure UART0 for 9600/N/8/2
-  //UART_16550_configure(UART0,9600,UART_PARITY_NONE,8,2);
-  //UART_16550_configure(UART1,9600,UART_PARITY_NONE,8,2);
-
-  xTaskCreateStatic(hello_task,
-                    "HelloTask",
-                    STACK_SIZE,
-                    NULL,
-                    TASK_PRIORITY,
-                    hello_stack,
-                    &hello_TCB 
-  );
+  UART_16550_configure(UART0,9600,UART_PARITY_NONE,8,2);
+  UART_16550_configure(UART1,9600,UART_PARITY_NONE,8,2);
   
-  xTaskCreateStatic(stats_task,
-                    "Stats",
-                    STATS_TASK_STACK_SIZE,
-                    NULL,
-                    STATS_TASK_PRIORITY,
-                    stats_task_stack, 
-                    &stats_task_tcb
-  );
+  /* Create the task without using any dynamic memory allocation. */
+  hello_handle = xTaskCreateStatic(hello_task,"hello",STACK_SIZE,
+				   NULL,3,hello_stack,&hello_TCB);
+			      
+  /* Create the task without using any dynamic memory allocation. */
+  stats_handle = xTaskCreateStatic(stats_task,"stats",STATS_TASK_STACK_SIZE,
+				   NULL,2,stats_task_stack,&stats_task_tcb);
+			      
+  /* start the scheduler */
   vTaskStartScheduler();
-  while(1);//bad
-  
+
+  /* we should never get to this point, but if we do, go into infinite
+     loop */
+  while(1);
 }
 
+
+
+/* Blatantly stolen from
+   https://www.freertos.org/a00110.html#include_parameters
+   and I really don't understand it yet.
+*/
+
+/* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application
+must provide an implementation of vApplicationGetIdleTaskMemory() to
+provide the memory that is used by the Idle task. */
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
                                     StackType_t **ppxIdleTaskStackBuffer,
                                     uint32_t *pulIdleTaskStackSize )
@@ -64,8 +73,22 @@ static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
+/*-----------------------------------------------------------*/
 
-void vConfigureTimerForRunTimeStats( void )
+
+
+
+void vAssertCalled( unsigned line, const char * const filename )
 {
-    /* Nothing needed as timer is configured in setup_stats_timer() */
+  unsigned uSetToNonZeroInDebuggerToContinue=0;
+    taskENTER_CRITICAL();
+    {
+        /* You can step out of this function to debug the assertion by using
+        the debugger to set ulSetToNonZeroInDebuggerToContinue to a non-zero
+        value. */
+        while(uSetToNonZeroInDebuggerToContinue == 0)
+        {
+        }
+    }
+    taskEXIT_CRITICAL();
 }
