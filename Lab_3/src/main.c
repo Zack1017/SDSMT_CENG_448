@@ -25,12 +25,12 @@ int main( void )
   UART_16550_configure(UART1,9600,UART_PARITY_NONE,8,2);
   
   /* Create the task without using any dynamic memory allocation. */
-  hello_handle = xTaskCreateStatic(hello_task,"hello",STACK_SIZE,
+  hello_handle = xTaskCreateStatic(hello_task,"hello",HELLO_STACK_SIZE,
 				   NULL,3,hello_stack,&hello_TCB);
 			      
   /* Create the task without using any dynamic memory allocation. */
-  stats_handle = xTaskCreateStatic(stats_task,"stats",STATS_TASK_STACK_SIZE,
-				   NULL,2,stats_task_stack,&stats_task_tcb);
+  stats_handle = xTaskCreateStatic(stats_task,"stats",STATS_STACK_SIZE,
+				   NULL,2,stats_stack,&stats_TCB);
 			      
   /* start the scheduler */
   vTaskStartScheduler();

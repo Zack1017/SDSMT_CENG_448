@@ -91,16 +91,17 @@ include_directories(
 file(GLOB SOURCES
   "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/tasks.c"
   "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/list.c"
+  "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/queue.c"          
+  "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/stream_buffer.c" 
   "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/portable/GCC/ARM_CM3/port.c"
   "${CMAKE_SOURCE_DIR}/FreeRTOS/FreeRTOS-Kernel/portable/MemMang/heap_3.c"
   "${CMAKE_SOURCE_DIR}/CMSIS/CMSIS/Core/Source/core_cm3.c"
   "${CMAKE_SOURCE_DIR}/CMSIS/CMSIS/Device/ARM/ARMCM3/Source/system_ARMCM3.c"
   "${CMAKE_SOURCE_DIR}/src/main.c"
-  "${CMAKE_SOURCE_DIR}/src/uart.c"
+  "${CMAKE_SOURCE_DIR}/src/UART_16550.c"
   "${CMAKE_SOURCE_DIR}/src/startup_ARMCM3.S"
   "${CMAKE_SOURCE_DIR}/src/hello_task.c"
   "${CMAKE_SOURCE_DIR}/src/stats_task.c"
-  "${CMAKE_SOURCE_DIR}/src/stats_timer.c"
   "${CMAKE_SOURCE_DIR}/src/AXI_timer.c"
 )
 

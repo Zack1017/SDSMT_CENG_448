@@ -1,6 +1,7 @@
 
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
+
 //-----------------------------------------------------------
 // Cortex-M specific definitions. */
 //
@@ -12,16 +13,15 @@
 // Include CMSIS for your device, or comment this out and set the
 // parameters manually
 #include <ARMCM3.h> 
-#include <core_cm3.h>
-//#include <Device.h>
 // __NVIC_PRIO_BITS will be specified when CMSIS is being used. BUT
 //  ONLY IF YOU INCLUDE THE CMSIS HEADER PREVIOUSLY
-// #ifdef __NVIC_PRIO_BITS
-//    #define configPRIO_BITS	                         __NVIC_PRIO_BITS
-// #else
-//    #define configPRIO_BITS				 3
-// #endif
-// #define configENABLE_TRUSTZONE  0
+#ifdef __NVIC_PRIO_BITS
+  #define configPRIO_BITS	                         __NVIC_PRIO_BITS
+#else
+  #define configPRIO_BITS				 3
+#endif
+
+#define configENABLE_TRUSTZONE  0
 
 // The ARM Cortex supports nested interrupts. (Higher priority
 // interrupts can interrupt lower priority interrupts). ISRs that call
@@ -92,12 +92,19 @@
 #define configUSE_TICK_HOOK                              0
 #define configUSE_DAEMON_TASK_STARTUP_HOOK               0
 
+
+void vAssertCalled( unsigned line, const char * const filename );
 //#define configASSERT_DEFINED                             1
-//extern void vAssertCalled( void );
 //#define configASSERT( x )    if( ( x ) == 0 ) vAssertCalled()
 
-#define configUSE_MUTEXES                         0
-#define configUSE_RECURSIVE_MUTEXES               0
+/* Define to trap certain errors in application code during development. */
+#define ASSERT( x ) if( ( x ) == 0 ) vAssertCalled( __LINE__, __FILE__);
+// #define ASSERT( x )
+
+
+
+#define configUSE_MUTEXES                         1
+#define configUSE_RECURSIVE_MUTEXES               1
 #define configUSE_TIMERS                          0
 #define configTIMER_TASK_STACK_DEPTH              (256)
 
@@ -106,12 +113,10 @@
 #define configUSE_TRACE_FACILITY                  1
 #define configGENERATE_RUN_TIME_STATS             1
 #define configUSE_STATS_FORMATTING_FUNCTIONS      1 
-#define configSTATS_BUFFER_MAX_LENGTH           2048
 int get_stats_counter();
 void setup_stats_timer();
-#define portGET_RUN_TIME_COUNTER_VALUE         get_stats_counter
-#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS  setup_stats_timer
-#define AXI_TIMER_CLK_HZ 100000000u 
+#define portGET_RUN_TIME_COUNTER_VALUE          get_stats_counter
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS  setup_stats_timer 
 
 /* Optional FreeRTOS functionality.  Set the following definitions to
    1 to include the API function, or zero to exclude the API

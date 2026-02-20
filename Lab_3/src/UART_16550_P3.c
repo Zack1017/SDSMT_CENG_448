@@ -10,7 +10,7 @@
 // By including our header, we ensure that the header and the C
 // file agree about the function definitions.
 
-#include <UART_16550.h>
+#include <UART_16550.h
 #include <device_addrs.h>
 #include <semphr.h>
 #include <stream_buffer.h>
@@ -647,79 +647,65 @@ void UART_16550_rx_unlock(int UART)
 
 /*****************************************************************************/
 /* Try to read a character from the UART */
-BaseType_t UART_16550_get_char(int UART, char *ch, TickType_t xTicksToWait)
+BaseType_t UART_16550_get_char(int UART, char *ch,
+			       TickType_t xTicksToWait)
 {
   // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
   
-  if(ch == NULL)
-  {
-    return pdFAIL;
-  }
-  if(UART_16550_rx_lock(UART,xTicksToWait) != pdPASS)
-  {
-    return pdFAIL;
-  }
+  // Get the RX mutex using xTicksToWait (return pdFAIL if we don't
+  // get it)
 
-  TickType_t start = xTaskGetTickCount();
-  while(!uart[UART].dev->LSR.DR) // wait for data to be available in the UART FIFO
-    {
-      if(xTicksToWait != portMAX_DELAY)
-      {
-        TickType_t now = xTaskGetTickCount();
-        if(now - start >= xTicksToWait)
-        {
-          UART_16550_rx_unlock(UART);
-          return pdFAIL; // timeout
-        }
-      }
-      vTaskDelay(1); // wait a tick and check again
-  }
-  UART_16550_rx_unlock(UART);
-  return pdPASS;
+  // ------------ STUDENTS Insert code here
+
+  // Attempt to read a character from the receive (RX) stream buffer
+  // using xTicksToWait. It could fail (time out), so keep the value
+  // returned in a local variable.
+
+  // ------------ STUDENTS Insert code here
+  
+  // Release the mutex.
+  
+  // ------------ STUDENTS Insert code here
+
+  // Return the value we got from the attempt to read.
+
+  // ------------ STUDENTS Insert code here
 }
 
 /*****************************************************************************/
 /* Try to read a string from the UART */
-BaseType_t UART_16550_read_string(int UART, char *s, int maxLength, TickType_t xTicksToWait)
+BaseType_t UART_16550_read_string(int UART,
+				  char *s,
+				  int maxLength,
+				  TickType_t xTicksToWait)
 {
   // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
   
-  if(UART_16550_rx_lock(UART,xTicksToWait) == pdFAIL)
-  {
-    return pdFAIL;
-  }
-  int i;
-  for(i = 0; i < maxLength-1; i++)
-    {
-     char c;
-     TickType_t start = xTaskGetTickCount();
-     while(!uart[UART].dev->LSR.DR) // wait for data to be available in the UART FIFO
-       {
-        if(xTicksToWait != portMAX_DELAY)
-        {
-          TickType_t now = xTaskGetTickCount();
-          if(now - start >= xTicksToWait)
-          {
-            s[i] = 0; // null terminate the string
-            UART_16550_rx_unlock(UART);
-            return pdFAIL; // timeout
-          }
-        }
-        vTaskDelay(1); // wait a tick and check again
-    }    
-    c = (char)(uart[UART].dev->RBR & 0xFF); // read a character from the UART FIFO
-    s[i] = c; // store the character in the string
-    if(c == '\n' || c == '\r') // if we read a newline or carriage return, then we are done
-    {
-      i++;
-      break;
-    }
-  }
-  s[i] = '\0'; // null terminate the string
-  UART_16550_rx_unlock(UART);
-  return pdPASS;
+  // Get the RX mutex using xTicksToWait (return pdFAIL if we don't
+  // get it)
+
+  // ------------ STUDENTS Insert code here
+
+  // Read characters (using the UART_16550_get_char function) until
+  // maxLength-1 or until we get an ASCII newline character or ASCII
+  // return character, or until we time out.
+
+  // ------------ STUDENTS Insert code here
+
+  // Make sure it is null terminated.
+
+  // ------------ STUDENTS Insert code here
+
+  // Release the mutex.
+
+  // ------------ STUDENTS Insert code here
+
+  // Return pdPASS or pdFAIL
+  
+  // ------------ STUDENTS Insert code here
+
 }
 
 
