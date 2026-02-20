@@ -424,13 +424,11 @@ void UART_16550_configure(int UART,int baud,int parity,int bits,int stop_bits)
 /*****************************************************************************/
 /* Acquire the given UART transmitter mutex so that no other task can
    write to it. Returns pdPASS if the lock is acquired. */
-BaseType_t UART_16550_tx_lock(int UART,
-			      TickType_t xTicksToWait)
+BaseType_t UART_16550_tx_lock(int UART, TickType_t xTicksToWait)
 {
   // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
-  
-  // ------------ STUDENTS Insert code here
+  return xSemaphoreTakeRecursive(uart[UART].TX_mutex, xTicksToWait);
 }
 
 /*****************************************************************************/
@@ -440,38 +438,25 @@ void UART_16550_tx_unlock(int UART)
 {
   // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
-  
-  // ------------ STUDENTS Insert code here
+  (void)xSemaphoreGiveRecursive(uart[UART].TX_mutex);
 }
 
-/*****************************************************************************/
-/* Try to write a character to the UART */
+
 #ifdef ORIGINAL_PUT_CHAR
-// origial non-interrupt-driven version of put char.  Use this for
-// parts 1, 2 and 3 of the lab.
-BaseType_t UART_16550_put_char(int UART,
-			       char c,
-			       TickType_t xTicksToWait)
+BaseType_t UART_16550_put_char(int UART, char c, TickType_t xTicksToWait)
 {
-  // This is the original code.  There is a #define at the top of this
-  // file that selects this implementation.  Comment or delete that
-  // #define to use the interrupt-driven implementation.  For part
-  // three of the lab, add mutexes to this version.
-
-  // Acquire the transmitter mutex for this UART, so that other threads
-  // cannot interfere ( the ISR can sill interrupt us).
-
-  // ------------ STUDENTS Insert code here
-
+  // Acquire the transmitter mutex for this UART
+  if (UART_16550_tx_lock(UART, xTicksToWait) != pdPASS)
+    return pdFAIL;
 
   // Wait until transmitter holding register is empty
   while (!uart[UART].dev->LSR.THRE);
+
   // Send the character
-  uart[UART].dev->THR = c;
+  uart[UART].dev->THR = (uint32_t)c;
 
-  // Release the mutex.
-
-// ------------ STUDENTS Insert code here
+  // Release the mutex
+  UART_16550_tx_unlock(UART);
 
   return pdPASS;
 }
@@ -595,41 +580,30 @@ BaseType_t UART_16550_put_char(int UART,
 
 /*****************************************************************************/
 /* Write a string to the UART. */
-BaseType_t UART_16550_write_string(int UART,
-				   char *s,
-				   TickType_t xTicksToWait)
+BaseType_t UART_16550_write_string(int UART, char *s, TickType_t xTicksToWait)
 {
-  // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
 
-  // Get the TX mutex using xTicksToWait (return pdFAIL if we don't
-  // get it)
+  if (UART_16550_tx_lock(UART, xTicksToWait) != pdPASS)
+    return pdFAIL;
 
-  // ------------ STUDENTS Insert code here
-
-  // Use the put char function to send characters.  This could be
-  // greatly improved.
-  if(s != NULL)
+  if (s != NULL)
     while (*s != 0)
-      UART_16550_put_char(UART,*(s++),xTicksToWait);
+      UART_16550_put_char(UART, *(s++), xTicksToWait);
 
-  // release the TX mutex
-
-  // ------------ STUDENTS Insert code here
-  
+  UART_16550_tx_unlock(UART);
   return pdPASS;
 }
 
 /*****************************************************************************/
 /* Lock the given UART receiver, so that no other task can read
    from it  Returns pdPASS if the lock is acquired. */
-BaseType_t UART_16550_rx_lock(int UART,
-			      TickType_t xTicksToWait)
+BaseType_t UART_16550_rx_lock(int UART, TickType_t xTicksToWait)
 {
   // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
 
-  // ------------ STUDENTS Insert code here
+  return xSemaphoreTakeRecursive(uart[UART].RX_mutex, xTicksToWait);
   
 }
 
@@ -641,7 +615,7 @@ void UART_16550_rx_unlock(int UART)
   // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
   
-  // ------------ STUDENTS Insert code here
+  (void)xSemaphoreGiveRecursive(uart[UART].RX_mutex);
 
 }
 
@@ -649,77 +623,55 @@ void UART_16550_rx_unlock(int UART)
 /* Try to read a character from the UART */
 BaseType_t UART_16550_get_char(int UART, char *ch, TickType_t xTicksToWait)
 {
-  // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
-  
-  if(ch == NULL)
-  {
-    return pdFAIL;
-  }
-  if(UART_16550_rx_lock(UART,xTicksToWait) != pdPASS)
-  {
-    return pdFAIL;
-  }
 
-  TickType_t start = xTaskGetTickCount();
-  while(!uart[UART].dev->LSR.DR) // wait for data to be available in the UART FIFO
-    {
-      if(xTicksToWait != portMAX_DELAY)
-      {
-        TickType_t now = xTaskGetTickCount();
-        if(now - start >= xTicksToWait)
-        {
-          UART_16550_rx_unlock(UART);
-          return pdFAIL; // timeout
-        }
-      }
-      vTaskDelay(1); // wait a tick and check again
-  }
+  if (UART_16550_rx_lock(UART, xTicksToWait) != pdPASS)
+    return pdFAIL;
+
+  size_t n = xStreamBufferReceive(uart[UART].RX_buffer, ch, 1, xTicksToWait);
+
   UART_16550_rx_unlock(UART);
-  return pdPASS;
+
+  return (n == 1) ? pdPASS : pdFAIL;
 }
 
 /*****************************************************************************/
 /* Try to read a string from the UART */
 BaseType_t UART_16550_read_string(int UART, char *s, int maxLength, TickType_t xTicksToWait)
 {
-  // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
-  
-  if(UART_16550_rx_lock(UART,xTicksToWait) == pdFAIL)
+
+  if (UART_16550_rx_lock(UART, xTicksToWait) != pdPASS)
+    return pdFAIL;
+
+  if (s == NULL || maxLength <= 0)
   {
+    UART_16550_rx_unlock(UART);
     return pdFAIL;
   }
-  int i;
-  for(i = 0; i < maxLength-1; i++)
-    {
-     char c;
-     TickType_t start = xTaskGetTickCount();
-     while(!uart[UART].dev->LSR.DR) // wait for data to be available in the UART FIFO
-       {
-        if(xTicksToWait != portMAX_DELAY)
-        {
-          TickType_t now = xTaskGetTickCount();
-          if(now - start >= xTicksToWait)
-          {
-            s[i] = 0; // null terminate the string
-            UART_16550_rx_unlock(UART);
-            return pdFAIL; // timeout
-          }
-        }
-        vTaskDelay(1); // wait a tick and check again
-    }    
-    c = (char)(uart[UART].dev->RBR & 0xFF); // read a character from the UART FIFO
-    s[i] = c; // store the character in the string
-    if(c == '\n' || c == '\r') // if we read a newline or carriage return, then we are done
-    {
-      i++;
+
+  int i = 0;
+  BaseType_t got_any = pdFAIL;
+
+  while (i < (maxLength - 1))
+  {
+    char ch;
+    size_t n = xStreamBufferReceive(uart[UART].RX_buffer, &ch, 1, xTicksToWait);
+    if (n != 1)
       break;
-    }
+
+    got_any = pdPASS;
+
+    if (ch == '\n' || ch == '\r')
+      break;
+
+    s[i++] = ch;
   }
-  s[i] = '\0'; // null terminate the string
+
+  s[i] = 0;
+
   UART_16550_rx_unlock(UART);
-  return pdPASS;
+  return got_any;
 }
 
 
