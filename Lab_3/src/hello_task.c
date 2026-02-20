@@ -17,11 +17,11 @@ void hello_task(void *pvParameters)
   while(1)
     {
       // wait until the timeout
-      vTaskDelayUntil(&lastwake,period);
-      //vTaskDelay(period);
+      //vTaskDelayUntil(&lastwake,period);
+      vTaskDelay(period);
 
       // Calculate ticks since we last woke up, and track the jitter
-      ticks = xTaskGetTickCount();
+      //ticks = xTaskGetTickCount();
       if(loop_times>2)
 	{
 	  time = ticks-last_tick;
