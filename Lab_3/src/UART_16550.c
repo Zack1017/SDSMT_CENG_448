@@ -164,63 +164,61 @@ static UART_16550_descriptor_t uart[]={
 
 /*****************************************************************************/
 // This function is the ISR for transmitter interrupts.
-static void handle_tx_interrupt(UART_16550_descriptor_t *device,
-				BaseType_t *HigherPriorityTaskWoken)
+static void handle_tx_interrupt(UART_16550_descriptor_t *device, BaseType_t *HigherPriorityTaskWoken)
 {
-  // We got an interrupt indicating that the UART FIFO just became
-  // empty.  We must decide what to do based on the current state of
-  // the transmitter software state machine.
   switch(device->tx_state)
-    {
-      
+  {
     case TX_BUFFER:
-      // If the software state machine is in the TX_BUFFER state, then
-      // You can move up to 16 bytes from the transmit stream buffer
-      // to the transmit FIFO.  Move as many bytes as you can.
+    {
+      uint8_t ch;
+      uint32_t moved = 0;
 
-      // ------------ STUDENTS Insert code here
-      
-      // If the stream buffer is empty, change the state of the
-      // transmitter software state machine.
+      // Move up to 16 bytes from TX stream buffer to TX FIFO
+      while (moved < 16)
+      {
+        size_t n = xStreamBufferReceiveFromISR(device->TX_buffer, &ch, 1, HigherPriorityTaskWoken);
+        if (n != 1)
+          break;
 
-      // ------------ STUDENTS Insert code here
+        device->dev->THR = (uint32_t)ch;
+        moved++;
+      }
 
-      //   If you moved some bytes to the FIFO, then the new state is
-      //   TX_FIFO.
-
-      // ------------ STUDENTS Insert code here
-
-      //   Otherwise, the new state is TX_EMPTY. Optionally, disable
-      //   the transmitter interrupt.
-
-      // ------------ STUDENTS Insert code here
-
+      // If stream buffer is empty, state becomes TX_FIFO (FIFO has data, buffer empty)
+      if (xStreamBufferBytesAvailable(device->TX_buffer) == 0)
+      {
+        if (moved > 0)
+        {
+          device->tx_state = TX_FIFO;
+        }
+        else
+        {
+          // No data moved and buffer empty -> fully empty
+          device->tx_state = TX_EMPTY;
+          device->dev->IER.ETBEI = 0; // disable TX interrupt
+        }
+      }
+      else
+      {
+        // Still data in buffer
+        device->tx_state = TX_BUFFER;
+      }
       break;
+    }
 
     case TX_FIFO:
-      // If the software state machine is in the TX_FIFO state then we
-      // know that the FIFO just became empty and there is nothing in
-      // the stream buffer (If there was something in the buffer, the
-      // state would be TX_BUFFER). We can change the state to
-      // TX_EMPTY and optionally disable the transmit interrupt.
-      
-      // ------------ STUDENTS Insert code here
-
+      // FIFO just became empty and buffer is empty -> go idle and stop TX interrupts
+      device->tx_state = TX_EMPTY;
+      device->dev->IER.ETBEI = 0;
       break;
 
     case TX_EMPTY:
-      // If the state is TX_EMPTY, then we have nothing to do.  This
-      // should never happen, so hang in an infinite loop for
-      // debugging.
       while(1);
       break;
-              
+
     default:
-      // Somehow the ISR got called in an invalid tx_state. This
-      // should never happen, so hang in an infinite loop for
-      // debugging.
       while(1);
-    }
+  }
 }
 
 /*****************************************************************************/
@@ -252,10 +250,12 @@ static void UART_handler(UART_16550_descriptor_t *device)
         {
         case 0b010: // Received Data Available
         case 0b110: // Character Timeout
-          // Move as many characters as possible from the UART FIFO to
-          // the RX stream buffer
-
-	  // ------------ STUDENTS Insert code here
+          while (device->dev->LSR.DR)
+          {
+            ch = (uint8_t)device->dev->RBR;
+            (void)xStreamBufferSendFromISR(device->RX_buffer, &ch, 1, &HigherPriorityTaskWoken);
+          }
+          break;
 
 	  break;
 
@@ -275,15 +275,9 @@ static void UART_handler(UART_16550_descriptor_t *device)
 
     }
   
-  // The interrupts should now be clear in the device, and now we must
-  // clear the interrupt in the NVIC.
+  NVIC_ClearPendingIRQ((IRQn_Type)device->interrupt_number);
 
-  // ------------ STUDENTS Insert code here
-
-  // If reading from the stream buffer has unblockd a task with higher
-  // priority than the one currently running, then run the scheduler.
-
-  // ------------ STUDENTS Insert code here
+  portYIELD_FROM_ISR(HigherPriorityTaskWoken);
 
 }
 
@@ -374,49 +368,70 @@ void UART_16550_init()
  */
 void UART_16550_configure(int UART,int baud,int parity,int bits,int stop_bits)
 {
-  // Assert that the uart number is good.
   ASSERT(UART >= 0 && UART < NUM_UARTS);
-  
-  // Calculate the baud rate divisor
-  unsigned divisor = UART_16550_clk / (baud << 4);
-  
-  // Extremely high baud rates have too much error and just won't work.
-  ASSERT(divisor > 24);
 
-  // Make sure divisor fits in 16 bits
+  unsigned divisor = UART_16550_clk / (baud << 4);
+  ASSERT(divisor > 24);
   ASSERT(divisor < 1<<16);
 
-  // Write the baud rate divisor
+  UART_16550_t *dev = uart[UART].dev;
 
-  // ------------ STUDENTS Insert code here
+  // ---- Write baud rate divisor (DLAB=1 to access DLL/DLH)
+  LCR_t lcr = dev->LCR;
+  lcr.DLAB = 1;
+  dev->LCR = lcr;
 
-  // Set the parity (make sure that it is one of the three valid options)
+  dev->DLL = (uint32_t)(divisor & 0xFF);
+  dev->DLH = (uint32_t)((divisor >> 8) & 0xFF);
+
+  lcr.DLAB = 0;
+
+  // ---- Set parity
   ASSERT(parity >= 0 && parity < 3);
+  if (parity == UART_PARITY_NONE)
+  {
+    lcr.PEN = 0;
+    lcr.EPS = 0;
+  }
+  else if (parity == UART_PARITY_EVEN)
+  {
+    lcr.PEN = 1;
+    lcr.EPS = 1;
+  }
+  else // UART_PARITY_ODD
+  {
+    lcr.PEN = 1;
+    lcr.EPS = 0;
+  }
 
-  // ------------ STUDENTS Insert code here
+  // ---- Set number of data bits (WLS: 0=5 ... 3=8)
+  ASSERT(bits > 4 && bits < 9);
+  lcr.WLS = (unsigned)(bits - 5);
 
-  // Set the number of data bits
-  ASSERT(bits>4 && bits < 9);
-
-  // ------------ STUDENTS Insert code here
-
-  // Set the number of stop bits
+  // ---- Set number of stop bits (STB: 0=1 stop, 1=2 stops)
   ASSERT(stop_bits > 0 && stop_bits < 3);
+  lcr.STB = (stop_bits == 2) ? 1 : 0;
 
-  // ------------ STUDENTS Insert code here
+  dev->LCR = lcr;
 
-  // Reset and enable the FIFOs.
+  // ---- Reset and enable FIFOs
+  FCR_t fcr = (FCR_t){0};
+  fcr.FIFOEN = 1;
+  fcr.RF_reset = 1;
+  fcr.XF_reset = 1;
+  fcr.RFTL = 0b11; // max trigger level (commonly 14 bytes) for RX “almost full”
+  dev->FCR = fcr;
 
-  // ------------ STUDENTS Insert code here
-  
-  // Enable receiver and transmitter interrupts. Disable line control
-  // and modem status interrupts.
+  // ---- Enable receiver interrupts; transmitter interrupt enabled only when needed
+  IER_t ier = (IER_t){0};
+  ier.ERBFI = 1;  // RX data available / timeout
+  ier.ETBEI = 0;  // TX empty interrupt (enable when transitioning out of TX_EMPTY)
+  ier.ELSI  = 0;
+  ier.EDSSI = 0;
+  dev->IER = ier;
 
-  // ------------ STUDENTS Insert code here
-
-  // Enable interrupts on the NVIC
-
-  // ------------ STUDENTS Insert code here
+  // ---- Enable interrupt on NVIC
+  NVIC_EnableIRQ((IRQn_Type)uart[UART].interrupt_number);
 }
 
 
