@@ -34,7 +34,7 @@ void hello_task(void *pvParameters)
       loop_times++;
       sprintf(buffer,"Hello World %10lu %10lu %10lu\n\r",max_time,min_time,max_jitter);
       // acquire uart 
-      UART_16550_write_string(UART0,buffer,portMAX_DELAY);
+      UART_16550_write_string(UART1,buffer,portMAX_DELAY);
       // release uart
 
       last_tick = ticks;

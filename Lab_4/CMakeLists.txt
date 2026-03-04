@@ -89,6 +89,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/CMSIS/CMSIS/Core/Include
   ${CMAKE_SOURCE_DIR}/CMSIS/Device/ARM/ARMCM3/Include
   ${CMAKE_SOURCE_DIR}/PDCurses
+  ${CMAKE_SOURCE_DIR}/PDCurses/common
+  ${CMAKE_SOURCE_DIR}/PDCurses/ANSI
+  ${CMAKE_SOURCE_DIR}/PDCurses/ANSI/drivers
 )
 
 # list of FreeRTOS sources that we need
@@ -112,11 +115,22 @@ file(GLOB SOURCES
   "${CMAKE_SOURCE_DIR}/src/AXI_timer.c"
   "${CMAKE_SOURCE_DIR}/src/UART_16550.c"
   "${CMAKE_SOURCE_DIR}/src/startup_ARMCM3.S"
+  "${CMAKE_SOURCE_DIR}/src/firework.c"
 )
 
 file(GLOB PDCURSES_SOURCES
-  "${CMAKE_SOURCE_DIR}/PDCurses/*.c"
+  "${CMAKE_SOURCE_DIR}/PDCurses/common/*.c"
 )
+
+file(GLOB PDCURSES_ANSI_SOURCES
+  "${CMAKE_SOURCE_DIR}/PDCurses/ANSI/*.c"
+  "${CMAKE_SOURCE_DIR}/PDCurses/ANSI/drivers/*.c"
+)
+
+set(PDCURSES_FREERTOS_DRIVER "")
+if(EXISTS "${CMAKE_SOURCE_DIR}/PDCurses/ANSI/drivers/FreeRTOS/driver_table.c")
+  set(PDCURSES_FREERTOS_DRIVER "${CMAKE_SOURCE_DIR}/PDCurses/ANSI/drivers/FreeRTOS/driver_table.c")
+endif()
 # Define our linker script
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/src/gcc_arm.ld)
 
@@ -128,7 +142,7 @@ add_link_options(-T ${LINKER_SCRIPT} --specs=nosys.specs -nostartfiles)
 
 # Define our target executable, and everything that it depends on
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
-add_executable(${PROJECT_NAME}.elf ${SOURCES} ${FREERTOS_SOURCES} ${LINKER_SCRIPT})
+add_executable(${PROJECT_NAME}.elf ${SOURCES} ${FREERTOS_SOURCES} ${PDCURSES_SOURCES} ${PDCURSES_ANSI_SOURCES} ${PDCURSES_FREERTOS_DRIVER} ${LINKER_SCRIPT})
 
 set(ELF_FILE ${PROJECT_NAME}.elf)
 set(HEX_FILE ${PROJECT_NAME}.hex)
