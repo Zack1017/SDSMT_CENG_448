@@ -1,4 +1,5 @@
 #include <firework_task.h>
+#include <task.h>
 #include <curses.h>
 #include <stdlib.h>
 

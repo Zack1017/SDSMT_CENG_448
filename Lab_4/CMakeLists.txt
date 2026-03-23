@@ -90,8 +90,10 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/CMSIS/Device/ARM/ARMCM3/Include
   ${CMAKE_SOURCE_DIR}/PDCurses
   ${CMAKE_SOURCE_DIR}/PDCurses/common
+  ${CMAKE_SOURCE_DIR}/PDCurses/pdcurses
   ${CMAKE_SOURCE_DIR}/PDCurses/ANSI
   ${CMAKE_SOURCE_DIR}/PDCurses/ANSI/drivers
+  ${CMAKE_SOURCE_DIR}/PDCurses/ANSI/drivers/FreeRTOS
 )
 
 # list of FreeRTOS sources that we need
@@ -118,7 +120,11 @@ file(GLOB SOURCES
   "${CMAKE_SOURCE_DIR}/src/firework.c"
 )
 
+# The upstream PDCurses repo keeps its core implementation in
+# PDCurses/pdcurses, while some course materials refer to PDCurses/common.
+# Collect both so the project works with either layout.
 file(GLOB PDCURSES_SOURCES
+  "${CMAKE_SOURCE_DIR}/PDCurses/pdcurses/*.c"
   "${CMAKE_SOURCE_DIR}/PDCurses/common/*.c"
 )
 
