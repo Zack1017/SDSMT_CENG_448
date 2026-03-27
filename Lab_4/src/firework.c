@@ -1,30 +1,28 @@
+#include <firework_task.h>
+#include <task.h>
 #include <curses.h>
 #include <stdlib.h>
-#include <time.h>
 
 #define DELAYSIZE 200
 
-void myrefresh(void);
-void get_color(void);
-void explode(int, int);
+static void myrefresh(void);
+static void get_color(void);
+static void explode(int row, int col);
 
-short color_table[] =
+static short color_table[] =
 {
     COLOR_RED, COLOR_BLUE, COLOR_GREEN, COLOR_CYAN,
     COLOR_RED, COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE
 };
 
-int main(int argc, char **argv)
+void firework_task(void *pvParameters)
 {
-    time_t seed;
     int start, end, row, diff, flag, direction;
     short i;
 
-#ifdef XCURSES
-    Xinitscr(argc, argv);
-#else
+    (void)pvParameters;
+
     initscr();
-#endif
     keypad(stdscr, TRUE);
     nodelay(stdscr, TRUE);
     noecho();
@@ -35,11 +33,10 @@ int main(int argc, char **argv)
     for (i = 0; i < 8; i++)
         init_pair(i, color_table[i], COLOR_BLACK);
 
-    seed = time((time_t *)0);
-    srand(seed);
+    srand(12345);
     flag = 0;
 
-    while (getch() == ERR)      /* loop until a key is hit */
+    while (getch() == ERR)
     {
         do {
             start = rand() % (COLS - 3);
@@ -78,11 +75,10 @@ int main(int argc, char **argv)
     }
 
     endwin();
-
-    return 0;
+    vTaskDelete(NULL);
 }
 
-void explode(int row, int col)
+static void explode(int row, int col)
 {
     erase();
     mvaddstr(row, col, "-");
@@ -131,15 +127,18 @@ void explode(int row, int col)
     myrefresh();
 }
 
-void myrefresh(void)
+static void myrefresh(void)
 {
     napms(DELAYSIZE);
     move(LINES - 1, COLS - 1);
     refresh();
 }
 
-void get_color(void)
+static void get_color(void)
 {
     chtype bold = (rand() % 2) ? A_BOLD : A_NORMAL;
     attrset(COLOR_PAIR(rand() % 8) | bold);
 }
+
+StaticTask_t firework_TCB;
+StackType_t firework_stack[FIREWORK_STACK_SIZE];
