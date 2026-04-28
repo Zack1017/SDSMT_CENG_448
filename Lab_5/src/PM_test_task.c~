@@ -1,0 +1,34 @@
+#include <PM_test_task.h>
+#include <LDP-001_PM_driver.h>
+#include <curses.h>
+#include <task.h>
+
+/* Structure that will hold the TCB of the task being created. */
+StaticTask_t PM_test_TCB;
+
+/* Buffer that the task being created will use as its stack. Note this
+is an array of StackType_t variables. The size of StackType_t is
+dependent on the RTOS port. */
+StackType_t PM_test_stack[ PM_TEST_STACK_SIZE ];
+
+
+#define CHANNEL 1
+
+void PM_test_task(void *params)
+{
+
+
+  PM_acquire(CHANNEL);
+
+  PM_set_cycle_time(CHANNEL,1000,100);
+  PM_set_PWM_mode(CHANNEL);
+  PM_disable_FIFO(CHANNEL);
+  PM_set_duty(CHANNEL,500);
+
+
+  while(1)
+    vTaskDelay(1000);
+  
+}
+
+
