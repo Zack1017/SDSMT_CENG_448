@@ -7,7 +7,6 @@
 #include <PM_test_task.h>
 #include <firework_task.h>
 #include <testcurs_task.h>
-#include <ninvaders.h>
 #include <device_addrs.h>
 #include <LDP-001_PM_driver.h>
 

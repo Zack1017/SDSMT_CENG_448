@@ -27,6 +27,9 @@
 #include "view.h"
 #include "globals.h"
 
+#ifndef NINVADERS_STACK_SIZE
+#define NINVADERS_STACK_SIZE 1024
+#endif
 
 #ifndef NINVADERS
 #define NINVADERS
