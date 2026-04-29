@@ -167,7 +167,7 @@ set(MAP_FILE ${PROJECT_NAME}.map)
 add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMAND ${CMAKE_OBJCOPY} -Oihex bin/${ELF_FILE} bin/${HEX_FILE}
         COMMAND ${CMAKE_OBJCOPY} -Obinary bin/${ELF_FILE} bin/${BIN_FILE}
-        COMMAND scripts/report_sections.sh ${CMAKE_SOURCE_DIR}/bin/${MAP_FILE}
+        COMMAND ${CMAKE_SOURCE_DIR}/scripts/report_sections.sh ${CMAKE_SOURCE_DIR}/bin/${MAP_FILE}
         COMMENT "Building ${HEX_FILE} Building ${BIN_FILE}")
 
 set_property(

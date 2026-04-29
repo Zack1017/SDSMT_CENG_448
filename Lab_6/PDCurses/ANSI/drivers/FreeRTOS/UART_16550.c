@@ -253,7 +253,7 @@ static BaseType_t UART_handler(UART_16550_descriptor_t *device)
   while(! iir.INTPEND) // use local variable to check INTPEND. INTPEND
 		       // is active low!
     {
-      switch(iir.INTID2) // use local variable to check INTID2
+      switch(iir.NTID2) // use local variable to check INTID2
         {
         case 0b010: // Received Data Available
         case 0b110: // Character Timeout
