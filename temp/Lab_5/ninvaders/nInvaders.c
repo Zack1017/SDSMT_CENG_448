@@ -33,6 +33,7 @@
 #include "ufo.h"
 
 #include <ninvaders.h>
+#include <sound_effects.h>
 
 int weite;
 int level;
@@ -268,7 +269,13 @@ void handleTimer()
 	case GAME_LOOP:   	 // do game handling
 		
 		// move aliens
-		//  
+		//
+		if (aliens_move_counter == 0)
+	    {
+	      xEventGroupSetBits(effect_events,FASTINVADER2_EVENT);
+	      // xEventGroupSetBits(effect_events,FASTINVADER4_EVENT);
+	    }
+  
 
 		if (aliens_move_counter == 0 && aliensMove() == 1) {
 			// aliens reached player
@@ -288,6 +295,7 @@ void handleTimer()
 			lives--;			// player looses one life
 			drawscore();	                // draw score
 			playerExplode();		// display some explosion graphics
+			xEventGroupSetBits(effect_events,EXPLOSION1_EVENT);
 			if (lives == 0) {		// if no lives left ...
 				status = GAME_OVER;		// ... exit game
 			}
@@ -296,6 +304,12 @@ void handleTimer()
 		// move ufo
 		if (ufo_move_counter == 0 && ufoShowUfo() == 1) {
 			ufoMoveLeft();			// move it one position to the left
+			if(random()%40 == 0)
+			  if(random() &1)
+			    xEventGroupSetBits(effect_events, UFO_LOWPITCH_EVENT);
+			  else
+			    xEventGroupSetBits(effect_events, UFO_HIGHPITCH_EVENT);
+
 		}
 		
 		

@@ -69,7 +69,6 @@ int main(void)
    * sound test task in sound_effects.c.
    */
 
-#if 0
   invaders_handle = xTaskCreateStatic(ninvaders,
                                       "ninvaders",
                                       NINVADERS_STACK_SIZE,
@@ -77,21 +76,21 @@ int main(void)
                                       2,
                                       ninvaders_stack,
                                       &ninvaders_TCB);
-#endif
+
 
   /*
    * Do NOT enable PM_test_task while Lab 6 audio is running.
    * PM_test_task and the sound system both use the pulse modulator.
    */
-#if 0
-  PM_test_handle = xTaskCreateStatic(PM_test_task,
-                                     "PM_test",
-                                     PM_TEST_STACK_SIZE,
-                                     NULL,
-                                     2,
-                                     PM_test_stack,
-                                     &PM_test_TCB);
-#endif
+
+  // PM_test_handle = xTaskCreateStatic(PM_test_task,
+  //                                    "PM_test",
+  //                                    PM_TEST_STACK_SIZE,
+  //                                    NULL,
+  //                                    2,
+  //                                    PM_test_stack,
+  //                                    &PM_test_TCB);
+
 
   /*
    * Optional terminal/status tasks.
@@ -115,11 +114,8 @@ int main(void)
 
   configASSERT(hello_handle != NULL);
   configASSERT(stats_handle != NULL);
-
-#if 0
   configASSERT(invaders_handle != NULL);
   configASSERT(PM_test_handle != NULL);
-#endif
 
   // Start the scheduler
   vTaskStartScheduler();

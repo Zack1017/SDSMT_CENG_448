@@ -54,7 +54,7 @@ EventGroupHandle_t effect_events;
  *
  * For Part 2 and Part 3, set this to 0.
  */
-#define ENABLE_PART1_MIXER_TEST 1
+#define ENABLE_PART1_MIXER_TEST 0
 
 // Each sound effect task sends audio buffer pointers to the mixer.
 static QueueHandle_t effect_to_mixer_queues[NUM_EFFECTS];

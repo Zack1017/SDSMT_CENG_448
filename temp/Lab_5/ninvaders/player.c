@@ -26,7 +26,7 @@
 #include "aliens.h"
 #include "ufo.h"
 #include "nInvaders.h"
-
+#include <sound_effects.h>
 
 typedef struct Player Player;
 
@@ -154,6 +154,7 @@ void playerLaunchMissile()
 		player.missileFired = 1;	// missile is on its way
 		player.missileX = player.posX + PLAYERWIDTH / 2;	// launched from the middle of player...
 		player.missileY = PLAYERPOSY;	// ...at same horizontal position
+		xEventGroupSetBits(effect_events,SHOOT_EVENT);
 	}
 }
 
@@ -194,7 +195,8 @@ int playerMoveMissile()
 		// if missile hits an alien (TODO)
 		alienTypeHit = aliensHitCheck(player.missileX, player.missileY);
 		if (alienTypeHit != 0) {
-
+			
+			xEventGroupSetBits(effect_events,INVADERKILLED_EVENT);
 			doScoring(alienTypeHit);			// increase score
 			playerReloadMissile();				// reload missile
 
@@ -223,6 +225,7 @@ int playerMoveMissile()
 
 		// if missile hits ufo
 		if (ufoHitCheck(player.missileX, player.missileY) == 1) {
+			xEventGroupSetBits(effect_events,INVADERKILLED_EVENT);
 			doScoring(UFO_ALIEN_TYPE);
 			playerReloadMissile();
 		}
