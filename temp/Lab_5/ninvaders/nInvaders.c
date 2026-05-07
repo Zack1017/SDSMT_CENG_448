@@ -306,7 +306,8 @@ void handleTimer()
 			ufoMoveLeft();			// move it one position to the left
 			if(random()%40 == 0)
 			  if(random() &1)
-			    xEventGroupSetBits(effect_events, UFO_LOWPITCH_EVENT);
+			  ;
+			    //xEventGroupSetBits(effect_events, UFO_LOWPITCH_EVENT);
 			  else
 			    xEventGroupSetBits(effect_events, UFO_HIGHPITCH_EVENT);
 

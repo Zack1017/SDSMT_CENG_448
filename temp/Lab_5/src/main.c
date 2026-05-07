@@ -23,40 +23,28 @@ int main(void)
   TaskHandle_t invaders_handle = NULL;
   TaskHandle_t PM_test_handle = NULL;
 
-  /*
+
+  // Initialize the Pulse Modulator driver
+  PM_init();
+    // Initialize all UARTs
+  UART_16550_init();
+
+
+    // Configure UARTs
+  UART_16550_configure(UART0, 57600, UART_PARITY_NONE, 8, 1);
+  UART_16550_configure(UART1, 57600, UART_PARITY_NONE, 8, 1);
+
+    /*
    * Interrupt priorities:
    * Lower numerical value = higher priority on Cortex-M.
    *
    * Keep PM interrupt above UART so audio timing is more stable.
    */
   NVIC_SetPriority(UART0_IRQ, 0x6);
-  NVIC_SetPriority(UART1_IRQ, 0x5);
-
-  NVIC_SetPriority(PM_IRQ, 0x6);
+  NVIC_SetPriority(UART1_IRQ, 0x6);
+  NVIC_SetPriority(PM_IRQ, 0x5);
   NVIC_EnableIRQ(PM_IRQ);
 
-  // Initialize all UARTs
-  UART_16550_init();
-
-  // Initialize the Pulse Modulator driver
-  PM_init();
-
-  // Configure UARTs
-  UART_16550_configure(UART0, 57600, UART_PARITY_NONE, 8, 1);
-  UART_16550_configure(UART1, 57600, UART_PARITY_NONE, 8, 1);
-
-  /*
-   * Initialize Lab 6 sound effects.
-   *
-   * This creates:
-   * - event group
-   * - effect queues
-   * - mixer-to-ISR queue
-   * - ISR-to-mixer queue
-   * - effect tasks
-   * - mixer task
-   * - optional sound test task
-   */
   effect_init();
 
   /*
@@ -115,7 +103,7 @@ int main(void)
   configASSERT(hello_handle != NULL);
   configASSERT(stats_handle != NULL);
   configASSERT(invaders_handle != NULL);
-  configASSERT(PM_test_handle != NULL);
+  //configASSERT(PM_test_handle != NULL);
 
   // Start the scheduler
   vTaskStartScheduler();
@@ -163,17 +151,21 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimeTaskTCBBuffer,
 
 /*-----------------------------------------------------------*/
 
+volatile unsigned assert_line;
+volatile const char *assert_file;
+
 void vAssertCalled(unsigned line, const char * const filename)
 {
-  unsigned uSetToNonZeroInDebuggerToContinue = 0;
+  volatile unsigned uSetToNonZeroInDebuggerToContinue = 0;
 
-  (void)line;
-  (void)filename;
+  assert_line = line;
+  assert_file = filename;
 
   taskENTER_CRITICAL();
   {
     while (uSetToNonZeroInDebuggerToContinue == 0)
     {
+      __asm volatile ("nop");
     }
   }
   taskEXIT_CRITICAL();

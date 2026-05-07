@@ -1,6 +1,6 @@
 #include<sounds.h>
 
-effect_buffer explosion1[NUM_explosion1_BUFFERS] = {
+const effect_buffer explosion1[NUM_explosion1_BUFFERS] = {
   {
   {
     0xFB, 0xFA, 0xFA, 0xFA, 0xFB, 0xFF, 0x02, 0x02, 0xFF, 0xFB, 0xF9, 0xFB,
@@ -801,7 +801,7 @@ effect_buffer explosion1[NUM_explosion1_BUFFERS] = {
 	}
 };
 
-effect_buffer fastinvader1[NUM_fastinvader1_BUFFERS] = {
+const effect_buffer fastinvader1[NUM_fastinvader1_BUFFERS] = {
   {
   {
     0xFC, 0xF3, 0xE5, 0xD8, 0xCC, 0xC6, 0xC5, 0xCC, 0xD4, 0xDF, 0xED, 0xF8,
@@ -902,7 +902,7 @@ effect_buffer fastinvader1[NUM_fastinvader1_BUFFERS] = {
 	}
 };
 
-effect_buffer fastinvader2[NUM_fastinvader2_BUFFERS] = {
+const effect_buffer fastinvader2[NUM_fastinvader2_BUFFERS] = {
   {
   {
     0xFF, 0xFF, 0xF5, 0xE7, 0xDC, 0xD0, 0xC7, 0xC5, 0xCD, 0xD5, 0xE1, 0xED,
@@ -1003,7 +1003,7 @@ effect_buffer fastinvader2[NUM_fastinvader2_BUFFERS] = {
 	}
 };
 
-effect_buffer fastinvader3[NUM_fastinvader3_BUFFERS] = {
+const effect_buffer fastinvader3[NUM_fastinvader3_BUFFERS] = {
   {
   {
     0xFF, 0x00, 0x03, 0x00, 0x01, 0x00, 0xF7, 0xE9, 0xDD, 0xD1, 0xC8, 0xC8,
@@ -1104,7 +1104,7 @@ effect_buffer fastinvader3[NUM_fastinvader3_BUFFERS] = {
 	}
 };
 
-effect_buffer fastinvader4[NUM_fastinvader4_BUFFERS] = {
+const effect_buffer fastinvader4[NUM_fastinvader4_BUFFERS] = {
   {
   {
     0x01, 0x00, 0x00, 0x00, 0xFF, 0x01, 0x02, 0x03, 0x00, 0x01, 0x01, 0x01,
@@ -1219,7 +1219,7 @@ effect_buffer fastinvader4[NUM_fastinvader4_BUFFERS] = {
 	}
 };
 
-effect_buffer invaderkilled[NUM_invaderkilled_BUFFERS] = {
+const effect_buffer invaderkilled[NUM_invaderkilled_BUFFERS] = {
   {
   {
     0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0x00, 0x00,
@@ -1530,7 +1530,7 @@ effect_buffer invaderkilled[NUM_invaderkilled_BUFFERS] = {
 	}
 };
 
-effect_buffer shoot[NUM_shoot_BUFFERS] = {
+const effect_buffer shoot[NUM_shoot_BUFFERS] = {
   {
   {
     0xFF, 0xEB, 0xFC, 0x30, 0x11, 0xC0, 0x08, 0x20, 0xD8, 0xE1, 0x0F, 0x37,
@@ -1911,7 +1911,7 @@ effect_buffer shoot[NUM_shoot_BUFFERS] = {
 	}
 };
 
-effect_buffer ufo_highpitch[NUM_ufo_highpitch_BUFFERS] = {
+const effect_buffer ufo_highpitch[NUM_ufo_highpitch_BUFFERS] = {
   {
   {
     0x69, 0x14, 0xE1, 0xCD, 0x85, 0xAF, 0xC1, 0x06, 0x1B, 0x2D, 0x29, 0x66,
@@ -2082,7 +2082,7 @@ effect_buffer ufo_highpitch[NUM_ufo_highpitch_BUFFERS] = {
 	}
 };
 
-effect_buffer ufo_lowpitch[NUM_ufo_lowpitch_BUFFERS] = {
+const effect_buffer ufo_lowpitch[NUM_ufo_lowpitch_BUFFERS] = {
   {
   {
     0xF9, 0xFA, 0xFC, 0xFE, 0xFE, 0xFB, 0xFE, 0xFD, 0xFB, 0xFF, 0xFD, 0xFD,

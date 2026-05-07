@@ -10,11 +10,11 @@
 #include <event_groups.h>
 
 #include <LDP-001_PM_driver.h>
-
+volatile uint32_t sound_debug_step = 0x12345678;
 #define CHANNEL 0
 
 EventGroupHandle_t effect_events;
-
+static StaticEventGroup_t effect_events_buffer;
 /*
  * Lab audio:
  * - input samples are signed 8-bit
@@ -54,7 +54,16 @@ EventGroupHandle_t effect_events;
  *
  * For Part 2 and Part 3, set this to 0.
  */
-#define ENABLE_PART1_MIXER_TEST 0
+#define ENABLE_PART1_MIXER_TEST 1
+
+volatile uint32_t audio_isr_count = 0;
+volatile uint32_t mixer_start_count = 0;
+volatile uint32_t mixer_loop_count = 0;
+volatile uint32_t mixer_send_count = 0;
+volatile uint32_t mixer_return_count = 0;
+
+
+
 
 // Each sound effect task sends audio buffer pointers to the mixer.
 static QueueHandle_t effect_to_mixer_queues[NUM_EFFECTS];
@@ -66,7 +75,7 @@ static QueueHandle_t MixerToISRqueue;
 static QueueHandle_t ISRToMixerqueue;
 
 typedef struct {
-    effect_buffer *buffers;
+    const effect_buffer *buffers;
     int num_buffers;
     EventBits_t event;
     QueueHandle_t sendqueue;
@@ -81,8 +90,10 @@ static effect_param_t effect_task_params[NUM_EFFECTS] = {
     { invaderkilled,  NUM_invaderkilled_BUFFERS,  INVADERKILLED_EVENT,  NULL },
     { shoot,          NUM_shoot_BUFFERS,          SHOOT_EVENT,          NULL },
     { ufo_highpitch,  NUM_ufo_highpitch_BUFFERS,  UFO_HIGHPITCH_EVENT,  NULL },
-    { ufo_lowpitch,   NUM_ufo_lowpitch_BUFFERS,   UFO_LOWPITCH_EVENT,   NULL }
+    //{ ufo_lowpitch,   NUM_ufo_lowpitch_BUFFERS,   UFO_LOWPITCH_EVENT,   NULL }
 };
+
+
 
 static uint16_t mixer_buffers[NUM_MIXER_BUFFERS][EFFECT_BUFFER_SIZE];
 
@@ -116,6 +127,8 @@ static uint16_t audio_to_duty(int mixed_sample)
  */
 void audio_handler(void)
 {
+    audio_isr_count++;
+
     static uint16_t *buffer = NULL;
     static int buffer_index = 0;
 
@@ -164,6 +177,8 @@ static void effect_mixer_task(void *params)
 {
     (void)params;
 
+    mixer_start_count++;
+
     uint16_t *out_buffer = NULL;
 
     /*
@@ -174,6 +189,7 @@ static void effect_mixer_task(void *params)
     for (int i = 0; i < NUM_MIXER_BUFFERS; i++) {
         uint16_t *p = mixer_buffers[i];
         xQueueSend(ISRToMixerqueue, &p, portMAX_DELAY);
+        mixer_return_count++;
     }
 
     /*
@@ -190,6 +206,7 @@ static void effect_mixer_task(void *params)
     PM_enable(CHANNEL);
 
     while (1) {
+         mixer_loop_count++;
         xQueueReceive(ISRToMixerqueue, &out_buffer, portMAX_DELAY);
 
 #if ENABLE_PART1_MIXER_TEST
@@ -203,7 +220,9 @@ static void effect_mixer_task(void *params)
             }
 
             xQueueSend(MixerToISRqueue, &out_buffer, portMAX_DELAY);
+            mixer_send_count++;
             xQueueReceive(ISRToMixerqueue, &out_buffer, portMAX_DELAY);
+            mixer_return_count++;
         }
 
         for (int i = 0; i < EFFECT_BUFFER_SIZE; i++) {
@@ -218,14 +237,16 @@ static void effect_mixer_task(void *params)
          * Lab 6 Part 2/3:
          * Pull one chunk from each active sound queue and mix them.
          */
-        effect_buffer *active_buffers[NUM_EFFECTS];
+        const effect_buffer *active_buffers[NUM_EFFECTS];
 
         for (int effect = 0; effect < NUM_EFFECTS; effect++) {
             active_buffers[effect] = NULL;
 
-            xQueueReceive(effect_to_mixer_queues[effect],
-                          &active_buffers[effect],
-                          0);
+            if (effect_to_mixer_queues[effect] != NULL) {
+        xQueueReceive(effect_to_mixer_queues[effect],
+                      &active_buffers[effect],
+                      0);
+    }
         }
 
         for (int sample = 0; sample < EFFECT_BUFFER_SIZE; sample++) {
@@ -262,7 +283,7 @@ static void effect_task(void *params)
                             portMAX_DELAY);
 
         for (int i = 0; i < my_effect->num_buffers; i++) {
-            effect_buffer *buf = &my_effect->buffers[i];
+            const effect_buffer *buf = &my_effect->buffers[i];
 
             xQueueSend(my_effect->sendqueue,
                        &buf,
@@ -285,7 +306,7 @@ static void sound_test_task(void *params)
         FASTINVADER3_EVENT,
         FASTINVADER4_EVENT,
         UFO_HIGHPITCH_EVENT,
-        UFO_LOWPITCH_EVENT
+        //UFO_LOWPITCH_EVENT
     };
 
     int index = 0;
@@ -303,12 +324,12 @@ static void sound_test_task(void *params)
 }
 #endif
 
-#define MIXER_STACK_SIZE 512
+#define MIXER_STACK_SIZE 2048
 static TaskHandle_t mixer_task_handle;
 static StackType_t  mixer_stack[MIXER_STACK_SIZE];
 static StaticTask_t mixer_TCB;
 
-#define EFFECT_STACK_SIZE 256
+#define EFFECT_STACK_SIZE 1024
 static TaskHandle_t effect_task_handles[NUM_EFFECTS];
 static StackType_t effect_task_stacks[NUM_EFFECTS][EFFECT_STACK_SIZE];
 static StaticTask_t effect_task_TCBs[NUM_EFFECTS];
@@ -323,36 +344,72 @@ static StaticTask_t sound_test_TCB;
 static StaticQueue_t MixerToISRqueue_QCB;
 static StaticQueue_t ISRToMixerqueue_QCB;
 
-static uint16_t *MixerToISRqueue_buf[NUM_MIXER_BUFFERS];
-static uint16_t *ISRToMixerqueue_buf[NUM_MIXER_BUFFERS];
+static uint8_t MixerToISRqueue_buf[NUM_MIXER_BUFFERS * sizeof(uint16_t *)];
+static uint8_t ISRToMixerqueue_buf[NUM_MIXER_BUFFERS * sizeof(uint16_t *)];
 
 static StaticQueue_t effect_queue_QCBs[NUM_EFFECTS];
-static effect_buffer *effect_queue_bufs[NUM_EFFECTS][EFFECT_QUEUE_LENGTH];
+static uint8_t effect_queue_bufs[NUM_EFFECTS]
+                                [EFFECT_QUEUE_LENGTH * sizeof(const effect_buffer *)];
+
+/*
+ * TEMP TEST:
+ * Standalone effect queue storage.
+ * This bypasses effect_queue_QCBs[0] and effect_queue_bufs[0]
+ * so we can test whether the array-based storage is causing the fault.
+ */
+static StaticQueue_t effect0_queue_QCB;
+static uint8_t effect0_queue_storage[EFFECT_QUEUE_LENGTH * sizeof(const effect_buffer *)]
+    __attribute__((aligned(4)));
 
 void effect_init(void)
 {
-    effect_events = xEventGroupCreate();
 
+    
+    /*
+     * Create the event group used by nInvaders / sound tasks
+     * to trigger individual sound effects.
+     */
+    effect_events = xEventGroupCreateStatic(&effect_events_buffer);
     configASSERT(effect_events != NULL);
 
+    /*
+     * Clear all queue handles before creating them.
+     * This makes mixer-side NULL checks safe if debugging later.
+     */
+    for (int i = 0; i < NUM_EFFECTS; i++) {
+        effect_to_mixer_queues[i] = NULL;
+    }
+
+    /*
+     * Queue of filled mixer buffers going to the PM/audio ISR.
+     * Each queue item is a uint16_t* pointing to one mixer buffer.
+     */
     MixerToISRqueue = xQueueCreateStatic(NUM_MIXER_BUFFERS,
                                          sizeof(uint16_t *),
-                                         (uint8_t *)MixerToISRqueue_buf,
+                                         MixerToISRqueue_buf,
                                          &MixerToISRqueue_QCB);
 
+    configASSERT(MixerToISRqueue != NULL);
+
+    /*
+     * Queue of empty/consumed mixer buffers returned from the ISR
+     * back to the mixer task.
+     */
     ISRToMixerqueue = xQueueCreateStatic(NUM_MIXER_BUFFERS,
                                          sizeof(uint16_t *),
-                                         (uint8_t *)ISRToMixerqueue_buf,
+                                         ISRToMixerqueue_buf,
                                          &ISRToMixerqueue_QCB);
 
-    configASSERT(MixerToISRqueue != NULL);
     configASSERT(ISRToMixerqueue != NULL);
 
+    /*
+     * Create one queue and one task for each sound effect.
+     */
     for (int i = 0; i < NUM_EFFECTS; i++) {
         effect_to_mixer_queues[i] =
             xQueueCreateStatic(EFFECT_QUEUE_LENGTH,
-                               sizeof(effect_buffer *),
-                               (uint8_t *)effect_queue_bufs[i],
+                               sizeof(const effect_buffer *),
+                               effect_queue_bufs[i],
                                &effect_queue_QCBs[i]);
 
         configASSERT(effect_to_mixer_queues[i] != NULL);
@@ -371,6 +428,9 @@ void effect_init(void)
         configASSERT(effect_task_handles[i] != NULL);
     }
 
+    /*
+     * Create the mixer task.
+     */
     mixer_task_handle =
         xTaskCreateStatic(effect_mixer_task,
                           "mixer",
@@ -383,6 +443,9 @@ void effect_init(void)
     configASSERT(mixer_task_handle != NULL);
 
 #if ENABLE_SOUND_TEST_TASK
+    /*
+     * Optional test task.
+     */
     sound_test_task_handle =
         xTaskCreateStatic(sound_test_task,
                           "sound_test",

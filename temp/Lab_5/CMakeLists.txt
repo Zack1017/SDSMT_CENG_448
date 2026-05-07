@@ -141,6 +141,7 @@ file(GLOB SOURCES
   "${CMAKE_SOURCE_DIR}/src/startup_ARMCM3.S"
   "${CMAKE_SOURCE_DIR}/src/heap_useNewlib.c"
   "${CMAKE_SOURCE_DIR}/src/sincos.c"
+  "${CMAKE_SOURCE_DIR}/src/hardfault_debug.c"
 )
 
 # Sources for sound effects

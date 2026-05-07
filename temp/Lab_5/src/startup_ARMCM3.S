@@ -137,14 +137,11 @@ Reset_Handler:
         .weak    HardFault_Handler
         .fnstart
 HardFault_Handler:
-        b        .
-        .fnend
-        .size    HardFault_Handler, . - HardFault_Handler
-
-        .thumb_func
-        .type    Default_Handler, %function
-        .weak    Default_Handler
-        .fnstart
+        tst lr, #4
+        ite eq
+        mrseq r0, msp
+        mrsne r0, psp
+        b HardFault_Handler_C
 Default_Handler:
         b        .
         .fnend
